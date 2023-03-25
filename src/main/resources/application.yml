@@ -1,0 +1,20 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 748440303117-g6l82pldugqekitgjo9pt1iruheaqubh.apps.googleusercontent.com
+            client-secret: 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
+  datasource:
+    url: jdbc:postgresql://localhost:5432/propertysalessystem
+    username: dobos
+    password: admin
+    jpa:
+      hibernate:
+        ddl-auto: create-drop
+      show-sql: true
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          format_sql: true
