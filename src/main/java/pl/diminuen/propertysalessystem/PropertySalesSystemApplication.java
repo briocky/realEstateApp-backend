@@ -4,11 +4,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import pl.diminuen.propertysalessystem.models.ERole;
-import pl.diminuen.propertysalessystem.models.Role;
-import pl.diminuen.propertysalessystem.models.User;
-import pl.diminuen.propertysalessystem.repositories.RoleRepository;
-import pl.diminuen.propertysalessystem.repositories.UserRepository;
+import pl.diminuen.propertysalessystem.models.*;
+import pl.diminuen.propertysalessystem.repositories.*;
 import pl.diminuen.propertysalessystem.security.oauth2.OAuth2Provider;
 
 import java.time.LocalDateTime;
@@ -24,8 +21,16 @@ public class PropertySalesSystemApplication {
 	}
 
 	@Bean
-	public CommandLineRunner commandLineRunner(UserRepository userRepository, RoleRepository roleRepository) {
+	public CommandLineRunner commandLineRunner(UserRepository userRepository, RoleRepository roleRepository, OfferRepository offerRepository) {
 		return args -> {
+//			OfferType saleOfferType = new OfferType(EOfferType.SALE);
+//			OfferType rentOfferType = new OfferType(EOfferType.RENT);
+//
+//			OfferStatus activeStatus = new OfferStatus(EOfferStatus.ACTIVE);
+//
+//			Offer offer = new Offer("MIESZKANIE ŁADNE", saleOfferType);
+//			Offer offer2 = new Offer("MIESZKANIE BRZYDKIE", saleOfferType);
+
 			Role roleUser = new Role(ERole.ROLE_USER);
 			Role roleModerator = new Role(ERole.ROLE_MODERATOR);
 			Role roleAdmin = new Role(ERole.ROLE_ADMIN);
@@ -45,6 +50,14 @@ public class PropertySalesSystemApplication {
 			userRepository.save(u1);
 			userRepository.save(u2);
 			userRepository.save(u3);
+
+//			offerTypeRepository.save(saleOfferType);
+//			offerTypeRepository.save(rentOfferType);
+//
+//			offerStatusRepository.save(activeStatus);
+
+//			offerRepository.save(offer);
+//			offerRepository.save(offer2);
 		};
 	}
 }

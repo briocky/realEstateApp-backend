@@ -31,3 +31,6 @@ app:
       minutes: 15
   oauth2:
     redirect: http://localhost:3000/oauth2/redirect
+  offer:
+    active:
+      duration: 25
