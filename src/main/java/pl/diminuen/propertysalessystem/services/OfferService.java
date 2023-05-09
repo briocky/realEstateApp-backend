@@ -2,10 +2,17 @@ package pl.diminuen.propertysalessystem.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pl.diminuen.propertysalessystem.dto.AddOfferDto;
+import pl.diminuen.propertysalessystem.dto.OfferDto;
+import pl.diminuen.propertysalessystem.dto.SearchOffersDto;
+import pl.diminuen.propertysalessystem.dto.SearchOffersResponse;
 import pl.diminuen.propertysalessystem.exceptions.AddOfferException;
 import pl.diminuen.propertysalessystem.models.*;
 import pl.diminuen.propertysalessystem.repositories.*;
@@ -14,10 +21,9 @@ import pl.diminuen.propertysalessystem.security.SecurityUser;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
+import static pl.diminuen.propertysalessystem.repositories.specifications.OfferSpecifications.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +38,7 @@ public class OfferService {
         User user = userRepository.findByEmail(securityUser.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User with email: " + securityUser.getUsername() + " cannot be found!"));
         boolean isPaid = true; //TODO: future feature - offer's fee
-        Set<Image> preparedImages = prepareImages(images);
+        List<Image> preparedImages = prepareImages(images);
         offerDto.getRealEstate().setImages(preparedImages);
         Offer offer = new Offer(
                 offerDto.getOfferTitle(),
@@ -50,9 +56,9 @@ public class OfferService {
         offerRepository.save(offer);
     }
 
-    private Set<Image> prepareImages(MultipartFile[] requestImages) {
+    private List<Image> prepareImages(MultipartFile[] requestImages) {
         final Set<String> allowedContentTypes = new HashSet<>(Arrays.asList("image/png", "image/jpeg"));
-        Set<Image> images = new HashSet<>();
+        List<Image> images = new ArrayList<>();
         Image img;
 
         if(requestImages != null) {
@@ -75,4 +81,54 @@ public class OfferService {
 
         return images;
     }
+
+    public SearchOffersResponse searchOffers(SearchOffersDto searchCriteria, SecurityUser securityUser,
+                                             int pageNumber, int pageSize) {
+        if(securityUser != null) {
+            User user = userRepository.findByEmail(securityUser.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User with email: " + securityUser.getUsername() + " cannot be found!"));
+        } //TODO: Wygeneruj refresh token
+
+        Pageable pageData = PageRequest.of(pageNumber,pageSize, Sort.by("submissionDate").descending());
+
+        Page<Offer> offers = offerRepository.findAll(
+                hasOfferType(searchCriteria.getOfferType())
+                        .and(hasRealEstateType(searchCriteria.getRealEstateType()))
+                        .and(hasPlace(searchCriteria.getPlace()))
+                        .and(hasPriceMin(searchCriteria.getPriceMin()))
+                        .and(hasPriceMax(searchCriteria.getPriceMax()))
+                        .and(hasAreaMax(searchCriteria.getAreaMax()))
+                        .and(hasAreaMin(searchCriteria.getAreaMin()))
+                        .and(hasRoomCount(searchCriteria.getRoomCount())),pageData
+        );
+
+        int totalPages = offers.getTotalPages();
+        List<OfferDto> offersDto = mapOffersToOfferDto(offers.getContent());
+
+        return new SearchOffersResponse(totalPages, offersDto);
+    }
+
+    private List<OfferDto> mapOffersToOfferDto(List<Offer> offers) {
+        return offers.stream().map((offer) -> {
+            Image offerMainImage = offer.getRealEstate().getImages().size() != 0 ?
+                    offer.getRealEstate().getImages().get(0) : null;
+
+            return OfferDto.builder()
+                    .id(offer.getId())
+                    .offerStatus(offer.getOfferStatus())
+                    .offerType(offer.getOfferType())
+                    .title(offer.getTitle())
+                    .price(offer.getPrice())
+                    .expirationDate(offer.getExpirationDate())
+                    .submissionDate(offer.getSubmissionDate())
+                    .area(offer.getRealEstate().getArea())
+                    .realEstateType(offer.getRealEstate().getRealEstateType())
+                    .place(offer.getRealEstate().getAddress().getPlace())
+                    .image(offerMainImage)
+                    .roomCount(offer.getRealEstate().getRoomCount())
+                    .viewsCount(offer.getViewsCount())
+                    .build();
+        }).toList();
+    }
+
 }

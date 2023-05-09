@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "real_estates")
@@ -27,7 +27,7 @@ public class RealEstate {
     private ERealEstateType realEstateType;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "real_estate_id")
-    private Set<Image> images;
+    private List<Image> images;
 
     @JsonCreator
     public RealEstate(String description, Double area, Integer roomCount, Address address, ERealEstateType realEstateType) {

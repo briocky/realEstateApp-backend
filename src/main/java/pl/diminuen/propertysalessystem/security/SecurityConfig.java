@@ -35,7 +35,8 @@ public class SecurityConfig {
         http
                 .cors().and().csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/login","/api/v1/auth/register").permitAll()
+                .requestMatchers("/api/v1/auth/login","/api/v1/auth/register","/api/v1/offer/search")
+                    .permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .oauth2Login()
