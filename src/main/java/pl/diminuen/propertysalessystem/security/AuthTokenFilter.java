@@ -1,11 +1,12 @@
 package pl.diminuen.propertysalessystem.security;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,8 +28,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         final String jwtTokenPrefix = "Bearer";
         final int jwtTokenStartPosition = jwtTokenPrefix.length() + 1;
         final String authHeader = request.getHeader(AUTHORIZATION);
-        final String userEmail;
         final String jwtToken;
+        String userEmail = null;
 
         if(authHeader == null || !authHeader.startsWith(jwtTokenPrefix)) {
             filterChain.doFilter(request, response);
@@ -36,7 +37,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
 
         jwtToken = authHeader.substring(jwtTokenStartPosition);
-        userEmail = jwtUtils.extractEmail(jwtToken);
+        try {
+            userEmail = jwtUtils.extractEmail(jwtToken);
+        } catch(TokenExpiredException ex) {
+            final String errorMessage = "Token expired";
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.getWriter().write(errorMessage);
+            return;
+        }
 
         if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             var userDetails = (SecurityUser)userDetailsService.loadUserByUsername(userEmail);

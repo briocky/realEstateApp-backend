@@ -1,6 +1,7 @@
 package pl.diminuen.propertysalessystem.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,11 +10,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pl.diminuen.propertysalessystem.dto.AddOfferDto;
-import pl.diminuen.propertysalessystem.dto.OfferDto;
-import pl.diminuen.propertysalessystem.dto.SearchOffersDto;
-import pl.diminuen.propertysalessystem.dto.SearchOffersResponse;
+import pl.diminuen.propertysalessystem.dto.offer.*;
 import pl.diminuen.propertysalessystem.exceptions.AddOfferException;
+import pl.diminuen.propertysalessystem.exceptions.OfferDeletionException;
+import pl.diminuen.propertysalessystem.exceptions.OfferNotFoundException;
 import pl.diminuen.propertysalessystem.models.*;
 import pl.diminuen.propertysalessystem.repositories.*;
 import pl.diminuen.propertysalessystem.security.SecurityUser;
@@ -27,6 +27,7 @@ import static pl.diminuen.propertysalessystem.repositories.specifications.OfferS
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OfferService {
     @Value("${app.offer.active.duration}")
     private long offerActiveDuration;
@@ -87,7 +88,7 @@ public class OfferService {
         if(securityUser != null) {
             User user = userRepository.findByEmail(securityUser.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User with email: " + securityUser.getUsername() + " cannot be found!"));
-        } //TODO: Wygeneruj refresh token
+        }
 
         Pageable pageData = PageRequest.of(pageNumber,pageSize, Sort.by("submissionDate").descending());
 
@@ -113,22 +114,34 @@ public class OfferService {
             Image offerMainImage = offer.getRealEstate().getImages().size() != 0 ?
                     offer.getRealEstate().getImages().get(0) : null;
 
-            return OfferDto.builder()
-                    .id(offer.getId())
-                    .offerStatus(offer.getOfferStatus())
-                    .offerType(offer.getOfferType())
-                    .title(offer.getTitle())
-                    .price(offer.getPrice())
-                    .expirationDate(offer.getExpirationDate())
-                    .submissionDate(offer.getSubmissionDate())
-                    .area(offer.getRealEstate().getArea())
-                    .realEstateType(offer.getRealEstate().getRealEstateType())
-                    .place(offer.getRealEstate().getAddress().getPlace())
-                    .image(offerMainImage)
-                    .roomCount(offer.getRealEstate().getRoomCount())
-                    .viewsCount(offer.getViewsCount())
-                    .build();
+            return OfferDto.build(offer, offerMainImage);
         }).toList();
     }
 
+    public OfferDetailsResponse getOfferDetails(long offerId) {
+        Offer offer = offerRepository.findById(offerId)
+                .orElseThrow(() -> new OfferNotFoundException("Offer not found with id=" + offerId));
+
+        return OfferDetailsResponse.build(offer);
+    }
+
+    public SearchOffersResponse getAllMyOffers(SecurityUser securityUser, int pageNumber, int pageSize) {
+        Pageable pageData = PageRequest.of(pageNumber,pageSize, Sort.by("submissionDate").descending());
+        Page<Offer> offers = offerRepository.findAllByUserId(securityUser.getId(),pageData);
+
+        return new SearchOffersResponse(offers.getTotalPages(), mapOffersToOfferDto(offers.getContent()));
+    }
+
+    public void deleteOffer(SecurityUser securityUser, long id) {
+        Offer offer = offerRepository.findById(id)
+                .orElseThrow(() -> new OfferNotFoundException(
+                        "The offer cannot be found with id " + id
+                ));
+        if(offer.getUser().getId().equals(securityUser.getId())) {
+            offerRepository.deleteById(id);
+        } else {
+            log.info("An attempt to delete someone else's offer has been detected!");
+            throw new OfferDeletionException("Offer delete operation not permitted!");
+        }
+    }
 }

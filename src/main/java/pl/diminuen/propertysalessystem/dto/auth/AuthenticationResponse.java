@@ -1,4 +1,4 @@
-package pl.diminuen.propertysalessystem.dto;
+package pl.diminuen.propertysalessystem.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

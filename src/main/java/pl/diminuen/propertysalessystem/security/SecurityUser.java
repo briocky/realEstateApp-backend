@@ -25,6 +25,7 @@ public class SecurityUser implements UserDetails, OAuth2User {
         securityUser.id = user.getId();
         securityUser.email = user.getEmail();
         securityUser.name = user.getUsername();
+        securityUser.password = user.getPassword();
         securityUser.authorities = user.getRoles()
                 .stream()
                 .map((role) -> new SimpleGrantedAuthority(role.getName().name()))
@@ -33,6 +34,9 @@ public class SecurityUser implements UserDetails, OAuth2User {
         return securityUser;
     }
 
+    public Long getId(){
+        return id;
+    }
     @Override
     public String getUsername() {
         return email;

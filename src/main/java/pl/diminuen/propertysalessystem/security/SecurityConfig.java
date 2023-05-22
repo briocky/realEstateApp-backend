@@ -17,6 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import pl.diminuen.propertysalessystem.security.oauth2.CustomAuthenticationSuccessHandler;
 import pl.diminuen.propertysalessystem.security.oauth2.CustomOAuth2UserService;
 
@@ -35,7 +38,12 @@ public class SecurityConfig {
         http
                 .cors().and().csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/login","/api/v1/auth/register","/api/v1/offer/search")
+                .requestMatchers(
+                        "/api/v1/auth/login",
+                        "/api/v1/auth/register",
+                        "/api/v1/auth/refreshToken",
+                        "/api/v1/offer/search",
+                        "/api/v1/offer/{offerId}")
                     .permitAll()
                 .anyRequest().authenticated()
                 .and()

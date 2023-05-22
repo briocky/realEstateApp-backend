@@ -1,4 +1,4 @@
-package pl.diminuen.propertysalessystem.dto;
+package pl.diminuen.propertysalessystem.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

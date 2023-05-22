@@ -17,6 +17,7 @@ public class RealEstate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(length = 3000)
     private String description;
     private Double area;
     private Integer roomCount;

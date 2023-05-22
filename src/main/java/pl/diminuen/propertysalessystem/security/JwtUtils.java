@@ -18,8 +18,10 @@ import java.util.Map;
 @Component
 public class JwtUtils {
     private String jwtSecret;
-    @Value("${app.jwt.expiration.minutes}")
-    private int jwtExpirationMinutes;
+    @Value("${app.jwt.token.expiration.milis}")
+    private int tokenExpMilis;
+    @Value("${app.jwt.refreshToken.expiration.milis}")
+    private int refreshTokenExpMilis;
     private final Algorithm signingAlgorithm;
 
     public JwtUtils(@Value("${app.jwt.secret}") String jwtSecret) {
@@ -27,15 +29,21 @@ public class JwtUtils {
         signingAlgorithm = Algorithm.HMAC256(jwtSecret);
     }
 
+    public String generateRefreshToken(UserDetails userDetails) {
+        return generateNewToken(userDetails, refreshTokenExpMilis);
+    }
+
     public String generateToken(UserDetails userDetails) {
-        long jwtExpirationMilis = (long)jwtExpirationMinutes * 60 * 1000;
-        Map<String, Object> claims = new HashMap<>();
+        return generateNewToken(userDetails, tokenExpMilis);
+    }
+
+    private String generateNewToken(UserDetails userDetails, long tokenExpirationMilis) {
         JWTCreator.Builder jwtBuilder = JWT.create();
 
         jwtBuilder
                 .withSubject(userDetails.getUsername())
                 .withIssuedAt(new Date(System.currentTimeMillis()))
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpirationMilis))
+                .withExpiresAt(new Date(System.currentTimeMillis() + tokenExpirationMilis))
                 .withArrayClaim(
                         "authorities",
                         userDetails.getAuthorities().stream()

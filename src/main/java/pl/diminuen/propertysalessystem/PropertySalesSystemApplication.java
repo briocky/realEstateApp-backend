@@ -4,6 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import pl.diminuen.propertysalessystem.models.*;
 import pl.diminuen.propertysalessystem.repositories.*;
 import pl.diminuen.propertysalessystem.security.oauth2.OAuth2Provider;
@@ -21,7 +22,7 @@ public class PropertySalesSystemApplication {
 	}
 
 	@Bean
-	public CommandLineRunner commandLineRunner(UserRepository userRepository, RoleRepository roleRepository, OfferRepository offerRepository) {
+	public CommandLineRunner commandLineRunner(UserRepository userRepository, RoleRepository roleRepository, OfferRepository offerRepository, PasswordEncoder passwordEncoder) {
 		return args -> {
 //			OfferType saleOfferType = new OfferType(EOfferType.SALE);
 //			OfferType rentOfferType = new OfferType(EOfferType.RENT);
@@ -39,9 +40,9 @@ public class PropertySalesSystemApplication {
 			List<Role> userRoles = new ArrayList<>(List.of(roleUser));
 			List<Role> adminRoles = new ArrayList<>(List.of(roleUser,roleAdmin));
 
-			User u1 = new User("Jan", "Kowalski", "userjanek123", "janek123@wp.pl", "janek", "123456789", true, LocalDateTime.now(ZoneId.systemDefault()), OAuth2Provider.LOCAL,userRoles);
-			User u2 = new User("Marek", "Kowalski", "adminmarek123", "marek@wp.pl", "marek", "123456789", true, LocalDateTime.now(ZoneId.systemDefault()), OAuth2Provider.LOCAL,adminRoles);
-			User u3 = new User("Mateusz", "Kowalski", "modmateusz123", "mateusz@wp.pl", "mateusz", "123456789", true, LocalDateTime.now(ZoneId.systemDefault()), OAuth2Provider.LOCAL,modRoles);
+			User u1 = new User("Jan", "Kowalski", "userjanek123", "janek123@wp.pl", passwordEncoder.encode("janek"), "123456789", true, LocalDateTime.now(ZoneId.systemDefault()), OAuth2Provider.LOCAL,userRoles);
+			User u2 = new User("Marek", "Kowalski", "adminmarek123", "marek@wp.pl", passwordEncoder.encode("marek"), "123456789", true, LocalDateTime.now(ZoneId.systemDefault()), OAuth2Provider.LOCAL,adminRoles);
+			User u3 = new User("Mateusz", "Kowalski", "modmateusz123", "mateusz@wp.pl", passwordEncoder.encode("mateusz"), "123456789", true, LocalDateTime.now(ZoneId.systemDefault()), OAuth2Provider.LOCAL,modRoles);
 
 			roleRepository.save(roleAdmin);
 			roleRepository.save(roleModerator);

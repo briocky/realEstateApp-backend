@@ -1,6 +1,7 @@
 package pl.diminuen.propertysalessystem.security.oauth2;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 import pl.diminuen.propertysalessystem.security.JwtUtils;
 import pl.diminuen.propertysalessystem.security.SecurityUser;
+import pl.diminuen.propertysalessystem.services.AuthService;
+import pl.diminuen.propertysalessystem.utils.CookieUtils;
 
 import java.io.IOException;
 
@@ -19,6 +21,7 @@ import java.io.IOException;
 public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     @Value("${app.oauth2.redirect}")
     private String redirectUri;
+    private final CookieUtils cookieUtils;
     private final JwtUtils jwtUtils;
 
     @Override
@@ -33,12 +36,12 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 determineTargetUrl(request, response, authentication) : redirectUri;
 
         String token = jwtUtils.generateToken((SecurityUser)authentication.getPrincipal());
-        targetUrl = UriComponentsBuilder
-                .fromUriString(targetUrl)
-                .queryParam("token", token)
-                .build()
-                .toUriString();
+        String refreshToken = jwtUtils.generateRefreshToken((SecurityUser)authentication.getPrincipal());
 
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        response.addCookie(cookieUtils.buildAuthTokenCookie(token));
+        response.addCookie(cookieUtils.buildRefreshTokenCookie(refreshToken));
+
+        response.sendRedirect(targetUrl);
+        //getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

@@ -23,12 +23,15 @@ spring:
         format_sql: true
 
 
-
 app:
   jwt:
     secret: i!@#!quhi2h428417as@!#adskj12!&*1aslkq!$nw
-    expiration:
-      minutes: 15
+    refreshToken:
+      expiration:
+        milis: 1036800000
+    token:
+      expiration:
+        milis: 900000
   oauth2:
     redirect: http://localhost:3000/oauth2/redirect
   offer:

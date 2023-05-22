@@ -8,11 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pl.diminuen.propertysalessystem.dto.AddOfferDto;
-import pl.diminuen.propertysalessystem.dto.SearchOffersDto;
-import pl.diminuen.propertysalessystem.dto.SearchOffersResponse;
+import pl.diminuen.propertysalessystem.dto.offer.*;
+import pl.diminuen.propertysalessystem.exceptions.OfferNotFoundException;
 import pl.diminuen.propertysalessystem.security.SecurityUser;
 import pl.diminuen.propertysalessystem.services.OfferService;
+
+import java.util.List;
 
 
 @RestController
@@ -27,7 +28,7 @@ public class OfferController {
                                       @RequestPart("offerData") AddOfferDto offerDto,
                                       @Nullable @RequestPart("picture") MultipartFile[] pictures) {
         offerService.addOffer(offerDto, pictures, securityUser);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping(value = "/search")
@@ -39,4 +40,28 @@ public class OfferController {
         return ResponseEntity.status(HttpStatus.OK).body(offers);
     }
 
+    @GetMapping(value = "/{offerId}")
+    public ResponseEntity<?> getOfferDetails(@PathVariable long offerId) {
+        return ResponseEntity.ok(offerService.getOfferDetails(offerId));
+    }
+
+    @GetMapping(value = "/my")
+    public ResponseEntity<SearchOffersResponse> getAllMyOffers(@AuthenticationPrincipal SecurityUser securityUser,
+                                                         @RequestParam("page") int pageNumber,
+                                                         @RequestParam("pageSize") int pageSize ) {
+        return ResponseEntity.ok(offerService.getAllMyOffers(securityUser, pageNumber, pageSize));
+    }
+
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseEntity<?> deleteOffer(@AuthenticationPrincipal SecurityUser securityUser,
+                                         @PathVariable long id) {
+        offerService.deleteOffer(securityUser, id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @ExceptionHandler(value = {OfferNotFoundException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<?> handleOfferNotFoundException(OfferNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }
