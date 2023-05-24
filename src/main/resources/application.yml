@@ -4,28 +4,27 @@ spring:
       client:
         registration:
           google:
-            client-id: 748440303117-g6l82pldugqekitgjo9pt1iruheaqubh.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - profile
               - email
   datasource:
-    url: jdbc:postgresql://localhost:5432/propertysalessystem
-    username: dobos
-    password: admin
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_USERNAME}
   jpa:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 app:
   jwt:
-    secret: i!@#!quhi2h428417as@!#adskj12!&*1aslkq!$nw
+    secret: ${JWT_HASH_SECRET}
     refreshToken:
       expiration:
         milis: 1036800000
@@ -33,7 +32,7 @@ app:
       expiration:
         milis: 900000
   oauth2:
-    redirect: http://localhost:3000/oauth2/redirect
+    redirect: ${OAUTH2_REDIRECT_URL}
   offer:
     active:
       duration: 25

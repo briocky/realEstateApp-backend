@@ -75,6 +75,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>real-estate-app-backend</finalName>
 	</build>
-
 </project>
