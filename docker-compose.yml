@@ -14,7 +14,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/propertysalessystem
       - SPRING_DATASOURCE_USERNAME=dobos
       - SPRING_DATASOURCE_PASSWORD=admin
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - GOOGLE_CLIENT_ID=748440303117-g6l82pldugqekitgjo9pt1iruheaqubh.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=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
       - JWT_HASH_SECRET=i!@#!quhi2h428417as@!#adskj12!&*1aslkq!$nw

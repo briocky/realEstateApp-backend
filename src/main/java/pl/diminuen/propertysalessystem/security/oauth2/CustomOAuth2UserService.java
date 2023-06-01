@@ -45,7 +45,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         GoogleOAuth2User googleOAuth2User = objectMapper.convertValue(oAuth2User.getAttributes(), GoogleOAuth2User.class);
         Optional<User> optionalUser = userRepository.findByEmail(googleOAuth2User.email());
-        Role defaultRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new IllegalStateException("Default user role not found in a database."));
+        Role defaultRole = roleRepository.findByName(ERole.ROLE_USER).orElseGet(
+                () -> roleRepository.save(new Role(ERole.ROLE_USER)));
         User user;
         if(optionalUser.isEmpty()) {
             user = User.builder()
