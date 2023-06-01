@@ -54,6 +54,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .username(null)
                     .phoneNumber(null)
                     .firstName(googleOAuth2User.givenName())
+                    .pictureUrl(googleOAuth2User.pictureUrl())
                     .lastName(googleOAuth2User.familyName())
                     .roles(Collections.singletonList(defaultRole))
                     .joinDate(LocalDateTime.now(ZoneId.systemDefault()))

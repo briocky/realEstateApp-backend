@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import pl.diminuen.propertysalessystem.dto.offer.OfferDetailsEditDto;
 import pl.diminuen.propertysalessystem.dto.offer.*;
 import pl.diminuen.propertysalessystem.exceptions.AddOfferException;
 import pl.diminuen.propertysalessystem.exceptions.OfferDeletionException;
@@ -143,5 +144,40 @@ public class OfferService {
             log.info("An attempt to delete someone else's offer has been detected!");
             throw new OfferDeletionException("Offer delete operation not permitted!");
         }
+    }
+
+    public OfferDetailsEditDto getOfferDetailsForEdit(long offerId) {
+        Offer offer = offerRepository.findById(offerId)
+                .orElseThrow(() -> new OfferNotFoundException("Offer not found with id=" + offerId));
+
+        return OfferDetailsEditDto.build(offer);
+    }
+
+    public void updateOfferDetails(long offerId, OfferDetailsEditDto detailsEditDto) {
+        log.info("Update offer details with id={} has started!", offerId);
+        Offer offer = offerRepository.findById(offerId)
+                .orElseThrow(() -> new OfferNotFoundException("Offer not found with id=" + offerId));
+
+        RealEstate realEstate = offer.getRealEstate();
+        Address address = realEstate.getAddress();
+
+        address.setPlace(detailsEditDto.getPlace());
+        address.setStreet(detailsEditDto.getStreet());
+        address.setVoivodeship(detailsEditDto.getVoivodeship());
+        address.setCounty(detailsEditDto.getCounty());
+        address.setBuildingNumber(detailsEditDto.getBuildingNumber());
+        address.setApartmentNumber(detailsEditDto.getApartmentNumber());
+
+        realEstate.setAddress(address);
+        realEstate.setArea(detailsEditDto.getArea());
+        realEstate.setRoomCount(detailsEditDto.getRoomCount());
+        realEstate.setDescription(detailsEditDto.getDescription());
+
+        offer.setTitle(detailsEditDto.getTitle());
+        offer.setRealEstate(realEstate);
+        offer.setPrice(detailsEditDto.getPrice());
+
+        offerRepository.save(offer);
+        log.info("Offer details with id={} has finished!", offerId);
     }
 }

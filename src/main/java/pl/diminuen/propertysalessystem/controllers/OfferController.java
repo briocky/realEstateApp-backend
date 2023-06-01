@@ -13,8 +13,6 @@ import pl.diminuen.propertysalessystem.exceptions.OfferNotFoundException;
 import pl.diminuen.propertysalessystem.security.SecurityUser;
 import pl.diminuen.propertysalessystem.services.OfferService;
 
-import java.util.List;
-
 
 @RestController
 @RequestMapping("/api/v1/offer")
@@ -57,6 +55,18 @@ public class OfferController {
                                          @PathVariable long id) {
         offerService.deleteOffer(securityUser, id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping(value = "/toEdit/{id}")
+    public ResponseEntity<?> getOfferDetailsForEdit(@PathVariable(name = "id") long offerId) {
+        return ResponseEntity.ok(offerService.getOfferDetailsForEdit(offerId));
+    }
+
+    @PutMapping(value = "/edit/{id}")
+    public ResponseEntity<?> updateOfferDetails(@PathVariable long id,
+                                                @RequestBody OfferDetailsEditDto detailsEditDto) {
+        offerService.updateOfferDetails(id, detailsEditDto);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Offer updated successfully!");
     }
 
     @ExceptionHandler(value = {OfferNotFoundException.class})
